@@ -1,8 +1,23 @@
 # Risk of Recidivism Analysis
 
+## Background
+
+### The following videos explore bias in machine learning, from our example here to wider social and technical discussions on the subject: 
+
+- [The danger of predictive algorithms in criminal justice | Hany Farid](https://www.youtube.com/watch?v=p-82YeUPQh0&t=45s)
+
+- [How I'm fighting bias in algorithms | Joy Buolamwini](https://www.youtube.com/watch?v=UG_X_7g63rY)
+
+- [Getting Specific About Algorithmic Bias | Rachel Thomas](https://www.youtube.com/watch?v=S-6YGPrmtYc)
+
+- [Removing Unfair Bias in Machine Learning | Upkar Lidder](https://www.youtube.com/watch?v=7dL8nA4swvQ)
+
+
 ## Setup 
 
 ```{r}
+
+## Install and load required packages
 if (!require("pacman")) install.packages("pacman")
 
 pacman::p_load(
@@ -21,7 +36,7 @@ pacman::p_load(
 conflict_prefer("filter", "dplyr") 
 conflict_prefer("select", "dplyr") 
 
-# Set themes 
+# Set themes for visualization
 theme_set(ggthemes::theme_fivethirtyeight())
 ```
 
@@ -50,6 +65,7 @@ glue("N of observations (rows): {nrow(two_years)}
 
 ```{r}
 
+## Function to clean and organize data
 wrangle_data <- function(data){
 
 df <- data %>% 
@@ -83,8 +99,11 @@ return(df)}
 ### Apply the function to the data 
 
 ```{r}
+
+# Apply wrangle_data function to the dataset
 df <- wrangle_data(two_years)
 
+# Check column names
 names(df)
 
 # Check whether the function works as expected
@@ -96,8 +115,11 @@ head(df, 5)
 - Higher COMPAS scores are slightly correlated with a longer length of stay.
 
 ```{r}
+
+# Check correlation between length_of_stay and decile_score
 cor(df$length_of_stay, df$decile_score)
 
+# Visualize score distribution
 df %>%
   group_by(score) %>%
   count() %>%
@@ -107,9 +129,11 @@ df %>%
          y = "Count",
          title = "Score distribution")
 ```
-Judges are often presented with two sets of scores from the COMPAS system -- one that classifies people into High, Medium and Low risk, and a corresponding decile score. There is a clear downward trend in the decile scores as those scores increase for white defendants.
+>Judges are often presented with two sets of scores from the COMPAS system -- one that classifies people into High, Medium and Low risk, along with a corresponding decile score. There is a clear downward trend in the decile scores as those scores increase for white defendants.
 
 ```{r}
+
+# Visualize decile_score distributions by race category
 df %>%
   ggplot(aes(ordered(decile_score))) + 
           geom_bar() +
@@ -121,12 +145,13 @@ df %>%
 
 ## Modeling 
 
-After filtering out bad rows, our first question is whether there is a significant difference in COMPAS scores between races. To do so we need to change some variables into factors, and run a logistic regression, comparing low scores to high scores.
+After filtering out bad rows, our first question is *whether there is a significant difference in COMPAS scores between races.* To do so we need to change some variables into factors and run a logistic regression, comparing low scores to high scores.
 
 ### Model building 
 
 ```{r}
 
+## Create function to model the data
 model_data <- function(data){
 
 # Logistic regression model
@@ -165,17 +190,23 @@ list(lr_est, ols_est1, ols_est2,
 
 ```{r}
 
+# Evaluate AIC scores
 glue("AIC score of logistic regression: {model_data(df)[4]} 
       AIC score of OLS regression (with categorical DV):  {model_data(df)[5]}
       AIC score of OLS regression (with continuous DV): {model_data(df)[6]}")
 
 ```
 
+[Explore how to evaluate AIC scores with this short video!](https://www.youtube.com/watch?v=4utKjjoZEgE)
+
+
 ### Logistic regression model 
 
 ```{r}
+
 lr_model <- model_data(df)[1] %>% data.frame()
 
+# Visualize logistic regression 
 lr_model %>%
   filter(term != "(Intercept)") %>%
   mutate(term = gsub("race|age_cat|gender|M","", term)) %>%
