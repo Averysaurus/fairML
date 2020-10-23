@@ -1,5 +1,10 @@
 # Bias in the Data (Risk of Violent Recidivism Analysis)
 
+## Background
+
+The following explores an analysis parallel to what’s covered in part 1, the source data in part 2 includes violent crimes.  
+
+
 ## Setup 
 
 ```{r}
@@ -53,12 +58,14 @@ df <- data %>%
            is_recid != -1,
            c_charge_degree != "O",
            v_score_text != 'N/A') %>% 
+  w
     # Mutate variables 
     mutate(c_charge_degree = factor(c_charge_degree),
            age_cat = factor(age_cat),
            race = factor(race, levels = c("Caucasian","African-American","Hispanic","Other","Asian","Native American")),
            sex = factor(sex, levels = c("Male","Female")),
            v_score_text = factor(v_score_text, levels = c("Low", "Medium", "High")),
+           
 # I added this new variable to test whether measuring the DV as a binary or continuous var makes a difference 
            score_num = as.numeric(v_score_text)) %>%
     # Rename variables 
@@ -66,7 +73,8 @@ df <- data %>%
            gender = sex,
            score = v_score_text)
         
-return(df)}
+return(df)
+    }
 
 ```
 
@@ -97,7 +105,7 @@ df %>%
          title = "Score distribution")
 ```
 
-Score distribution by race
+### Score distribution by race:
 
 ```{r}
 
@@ -113,7 +121,7 @@ df %>%
 
 ## Modeling 
 
-After filtering out bad rows, our first question is whether there is a significant difference in COMPAS scores between races. To do so we need to change some variables into factors, and run a logistic regression, comparing low scores to high scores.
+After filtering out bad rows, our first question is whether there is a significant difference in COMPAS scores between races. To do so, we need to change some variables into factors and run a logistic regression, comparing low scores to high scores.
 
 ```{r}
 
@@ -150,7 +158,7 @@ list(lr_est, ols_est1, ols_est2, lr_AIC, ols_AIC1, ols_AIC2)
     
 ```
 
-### Model comparisons 
+### Model comparisons:
 
 ```{r}
 
@@ -206,12 +214,3 @@ interpret_estimate(lr_model) %>%
         geom_hline(yintercept = 1, linetype = "dashed")
 
 ```
-
-
-
-
-
-
-
-
-
